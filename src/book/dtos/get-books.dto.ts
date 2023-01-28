@@ -1,4 +1,5 @@
 import {
+  ArrayMinSize,
   IsDateString,
   IsNotEmpty,
   IsNumberString,
@@ -40,4 +41,12 @@ export class FiltersParamsDTO {
   @IsString({ message: 'O campo search precisa ser em texto' })
   @IsOptional()
   genre?: Genres;
+}
+
+export class GetFavoritesDTO {
+  @IsNotEmpty({ message: 'Favorites can not be empty' })
+  @ArrayMinSize(1, {
+    message: 'Favorites must have at least one element.',
+  })
+  favorites: string[];
 }

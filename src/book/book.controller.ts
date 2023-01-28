@@ -11,7 +11,7 @@ import {
 import { BookService } from './book.service';
 import { CreateBookDTO } from './dtos/create-book.dto';
 import { EditBookDTO } from './dtos/edit-book.dto';
-import { FiltersParamsDTO } from './dtos/get-books.dto';
+import { FiltersParamsDTO, GetFavoritesDTO } from './dtos/get-books.dto';
 
 @Controller('book')
 export class BookController {
@@ -47,13 +47,14 @@ export class BookController {
     return this.bookService.findMany(filters);
   }
 
-  @Get('/search/random')
+  @Get('search/random')
   async findRandom() {
     return this.bookService.findRandom();
   }
 
   @Post('favorites')
-  async getFavorites() {
-    return this.bookService.getFavorites();
+  async getFavorites(@Body() body: GetFavoritesDTO) {
+    const { favorites } = body;
+    return await this.bookService.getFavorites(favorites);
   }
 }

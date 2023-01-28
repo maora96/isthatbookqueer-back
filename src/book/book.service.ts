@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { endOfDay } from 'date-fns';
 import { knex } from 'src/db/knex';
 import { getLimitAndOffset } from 'src/utils/pagination';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Book } from './book.entity';
 import { Character } from './character.entity';
 import { CreateBookDTO, CreateCharacterDTO } from './dtos/create-book.dto';
@@ -156,5 +156,13 @@ export class BookService {
     return result;
   }
 
-  async getFavorites() {}
+  async getFavorites(ids: string[]) {
+    const books = await this.booksRepository.find({ where: { id: In(ids) } });
+
+    if (!books) {
+      throw new NotFoundException('Books not found');
+    }
+
+    return books;
+  }
 }
