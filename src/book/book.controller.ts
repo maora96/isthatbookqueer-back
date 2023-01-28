@@ -6,10 +6,12 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common/decorators';
 import { BookService } from './book.service';
 import { CreateBookDTO } from './dtos/create-book.dto';
 import { EditBookDTO } from './dtos/edit-book.dto';
+import { FiltersParamsDTO } from './dtos/get-books.dto';
 
 @Controller('book')
 export class BookController {
@@ -26,8 +28,8 @@ export class BookController {
   }
 
   @Patch('/approval/:id')
-  async changeApprovalStatus() {
-    return this.bookService.editApproval();
+  async changeApprovalStatus(@Param('id') id: string) {
+    return this.bookService.editApproval(id);
   }
 
   @Get(':id')
@@ -36,13 +38,13 @@ export class BookController {
   }
 
   @Delete(':id')
-  async delete() {
-    return this.bookService.delete();
+  async delete(@Param('id') id: string) {
+    return this.bookService.delete(id);
   }
 
   @Get()
-  async findMany() {
-    return this.bookService.findMany();
+  async findMany(@Query() { ...filters }: FiltersParamsDTO) {
+    return this.bookService.findMany(filters);
   }
 
   @Get('random')

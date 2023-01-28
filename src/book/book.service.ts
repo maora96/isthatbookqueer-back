@@ -1,11 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import { Injectable } from '@nestjs/common/decorators';
 import { InjectRepository } from '@nestjs/typeorm';
+import { endOfDay } from 'date-fns';
+import { knex } from 'src/db/knex';
+import { getLimitAndOffset } from 'src/utils/pagination';
 import { Repository } from 'typeorm';
 import { Book } from './book.entity';
 import { Character } from './character.entity';
 import { CreateBookDTO, CreateCharacterDTO } from './dtos/create-book.dto';
 import { EditBookDTO } from './dtos/edit-book.dto';
+import { FiltersParams } from './dtos/get-books.dto';
 
 @Injectable()
 export class BookService {
@@ -61,7 +65,18 @@ export class BookService {
     return this.booksRepository.save(book);
   }
 
-  async editApproval() {}
+  async editApproval(id: string) {
+    const book = await this.booksRepository.findOne({
+      where: { id },
+    });
+
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+
+    book.approved = !book.approved;
+    return this.booksRepository.save(book);
+  }
 
   async findOne(id: string) {
     return this.booksRepository.findOne({
@@ -70,9 +85,65 @@ export class BookService {
     });
   }
 
-  async delete() {}
+  async delete(id: string) {
+    const book = await this.booksRepository.findOne({
+      where: { id },
+    });
 
-  async findMany() {}
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+    return this.booksRepository.remove(book);
+  }
+
+  async findMany(filters: FiltersParams) {
+    const query = knex('books').select('*');
+    const totalQuery = knex('books').count();
+    const { limit, offset } = getLimitAndOffset(filters.amount, filters.page);
+
+    query.limit(limit).offset(offset);
+    totalQuery.limit(limit).offset(offset);
+
+    if (filters?.since) {
+      query.andWhere('createdAt', '>=', filters.since);
+
+      totalQuery.andWhere('createdAt', '>=', filters.since);
+    }
+
+    if (filters?.until) {
+      query.andWhere(
+        'createdAt',
+        '<=',
+        endOfDay(new Date(filters.until)).toDateString(),
+      );
+
+      totalQuery.andWhere(
+        'createdAt',
+        '<=',
+        endOfDay(new Date(filters.until)).toDateString(),
+      );
+    }
+
+    if (filters?.search) {
+      query
+        .whereILike('title', `%${filters.search}%`)
+        .orWhereILike('author', `%${filters.search}%`)
+        .orWhereILike('series', `%${filters.search}%`);
+      totalQuery
+        .whereILike('title', `%${filters.search}%`)
+        .orWhereILike('author', `%${filters.search}%`)
+        .orWhereILike('series', `%${filters.search}%`);
+    }
+
+    if (filters?.genre) {
+      query.whereRaw('? =ANY(genres)', filters.genre);
+    }
+
+    const result = await query;
+    const [total] = await totalQuery;
+
+    return { result, total: total?.count ? Number(total?.count) : 0 };
+  }
 
   async findRandom() {}
 
