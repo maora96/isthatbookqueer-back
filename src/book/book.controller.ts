@@ -47,7 +47,7 @@ export class BookController {
     return this.bookService.findMany(filters);
   }
 
-  @Get('random')
+  @Get('/search/random')
   async findRandom() {
     return this.bookService.findRandom();
   }

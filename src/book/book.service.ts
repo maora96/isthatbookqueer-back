@@ -145,7 +145,16 @@ export class BookService {
     return { result, total: total?.count ? Number(total?.count) : 0 };
   }
 
-  async findRandom() {}
+  async findRandom() {
+    const query = knex('books')
+      .select('*')
+      .orderByRaw('RANDOM()')
+      .where('approved', true);
+
+    const result = await query;
+
+    return result;
+  }
 
   async getFavorites() {}
 }
