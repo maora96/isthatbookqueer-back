@@ -20,6 +20,7 @@ export class BookController {
   @Post()
   async create(@Body() body: CreateBookDTO) {
     return this.bookService.create(body);
+    // return { message: 'hi', body };
   }
 
   @Patch(':id')

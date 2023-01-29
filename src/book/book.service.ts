@@ -38,6 +38,8 @@ export class BookService {
       ),
     );
 
+    console.log(book);
+
     return this.booksRepository.save(book);
   }
 
