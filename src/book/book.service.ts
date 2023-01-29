@@ -151,7 +151,9 @@ export class BookService {
     const query = knex('books')
       .select('*')
       .orderByRaw('RANDOM()')
-      .where('approved', true);
+      .where('approved', true)
+      .andWhere('is_queer', true)
+      .limit(1);
 
     const result = await query;
 
